@@ -1,5 +1,7 @@
 # Chess as a Behavioral Laboratory — analysis code
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22285434.svg)](https://doi.org/10.5281/zenodo.22285434)
+
 Analysis code, specifications, figures, and anonymized player-level data for a four-paper
 research program that uses chess as a recorded decision environment.
 

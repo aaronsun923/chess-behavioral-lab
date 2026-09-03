@@ -1,0 +1,18 @@
+# never publish raw or identifying data
+*_raw.csv
+fide_players.csv
+fide_cache.csv
+titled_players_roster*.csv
+probe_male_titled_results.csv
+player_id_mapping_PRIVATE.csv
+# engine binaries and bulk intermediates
+engine/
+stockfish*
+paper4_cache/
+paper4_results/
+paper4b_results/
+*.log
+*.parquet
+pgn/
+.DS_Store
+__pycache__/

@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below, and cite the relevant paper DOIs."
+title: "Chess as a Behavioral Laboratory: analysis code"
+type: software
+authors:
+  - family-names: Sun
+    given-names: Aaron
+    orcid: "https://orcid.org/0009-0000-2412-4727"
+license: MIT
+repository-code: "https://github.com/aaronsun923/chess-behavioral-lab"
+references:
+  - type: article
+    title: "Conditional by Design: Sex Differences in Chess Middlegame Decision Style Emerge at the Expert Tier"
+    doi: 10.5281/zenodo.22262168
+  - type: article
+    title: "Same Axis, Different Place: How Middlegame Style Shifts Across the Expertise Gradient"
+    doi: 10.5281/zenodo.22262896
+  - type: article
+    title: "Opening Convention, Middlegame Freedom: What Elite Stylistic Variation Implies for Developmental Chess Pedagogy"
+    doi: 10.5281/zenodo.22265831
+  - type: article
+    title: "Sharper, Not Safer: The Direction of Human Deviations from Engine Play"
+    doi: 10.5281/zenodo.22267000

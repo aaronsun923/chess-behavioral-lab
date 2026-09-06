@@ -258,3 +258,21 @@ Stop after delivery. The designer reads the direction and relative size of the t
 6. Environment: install `lightgbm`. Python 3.9.6 is acceptable; the README's 3.10+ requirement does not block this task; the report states the actual version.
 
 All other clauses unchanged.
+
+---
+
+## Amendment 2 (2026-09-05, after lock, during execution)
+
+**Trigger**: implementation review of how the [LOCKED] random-effects structures are actually estimated, plus one feature-definition convention that belongs on the record. This amendment records existing practice. No estimate, parameter, or model specification changes under it.
+
+**Decisions**:
+
+1. **Crossed random effects in §6.** The structure `(1 | player_id) + (1 | game_id)` in §6.1 through §6.5, and in the §7 robustness refits that reuse those model forms, is estimated with v1's `fit_mixed` (`paper4_report.py:74`): `game_id` enters as a variance component nested inside `player_id`; the fit is retried across optimizers with a guard that rejects degenerate optima (an all-zero variance solution reported as convergence); and an OLS fit with player-clustered standard errors is reported alongside it on the same rows. This is the same approximation v1 adopted and documented. Reusing it verbatim is also what makes §6.5's rerun of the v1 §7.2 model a like-for-like comparison — the same estimator on the same rows, so any difference in conclusion comes from the identification change and not from the fitting routine.
+
+2. **The crossing is real, not incidental.** In the (0, 5] analysis band, 1,937 of 1,967 games (98.5%) contribute rows from both players, so `game_id` genuinely crosses `player_id` rather than nesting inside it. What the approximation drops is the sharing of one game intercept across that game's two players. Because the crossing is real, the approximation is flagged in **every** mixed-model coefficient table in the report, not only once in a methods note.
+
+3. **§4.2 is not affected.** The nuisance model carries a single grouping factor, `(1 | player_id)`, and is fitted exactly (`MixedLM` grouped on `player_id`). No nesting approximation is involved there. Recorded so the distinction between §4.2 and §6 is explicit rather than assumed.
+
+4. **`spread_15` convention.** §3.2 defines `spread_15` as `WP_opp(1st) − WP_opp(5th)`. It is computed against the last available MultiPV line, which is v1's own convention for the same feature (`wp_best - wps[-1]`). The two are identical wherever the engine returned five lines — 56,541 of 57,294 successor positions, 98.7% — and differ only where it returned fewer. Matching v1 keeps the nuisance model's training features and its prediction features on a single definition, which §4.2 requires.
+
+All other clauses unchanged.

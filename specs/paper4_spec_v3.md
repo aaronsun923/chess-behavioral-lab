@@ -239,3 +239,20 @@ NET_realized ~ ΔRISK_steep_z + WPL_self_z + gap_12_orig_z + eval_volatility_ori
 | 尖锐度指标 | 仅 `RISK_steep`，不用 `RISK_var` | §3.3 |
 | 时间压力变量 | 对手时钟 | §6.3 |
 | 稳健性第 3 项模型 | LightGBM 默认参数 | §7 |
+
+---
+
+## 修正案 1（2026-09-05，锁定后、执行前）
+
+**触发**：实现者审核发现 v2 未持久化 MultiPV-5 的五条线，只存了 `wp_self_opp_best`、`wp_self_opp_worst`、`risk_var`、`n_pv`、`risk_steep`。§3.2 的 `gap_12`、`n_reasonable` 和 §3.1 的"回应落在 MultiPV-5 内则直接取 WP"均无法从 v2 取得。
+
+**决定**：
+
+1. §0 的"v2 后继评估不许重算"放宽为：**允许对 57,294 个后继局面按 v1/v2 同配置（depth 15，MultiPV 5，Threads=1，Hash=128，独立评估）重新评估一次，并持久化全部五条线的走法与 WP**。
+2. **[LOCKED]** 重算必须与 v2 一致性核对：对每个后继局面，重算得到的 `risk_steep` 与 v2 存储值逐行比较，报告最大绝对差和不一致行数。引擎版本相同、深度固定时应完全一致。若存在不一致，停下报告，不得用重算值替换 v2 的 `ΔRISK_steep`（§3.3 仍以 v2 存储值为准）。
+3. §3.1 的对手回应评估不做区间限制，全部 28,647 个偏离行都评估，因 §7 第 1 项稳健性需要 (0,10] 区间。
+4. §8 算力预算更新：实测 474 ms/局面，10 核 8 进程。后继重算约 57 分钟，对手回应约 28 分钟，合计约 1.5 小时。
+5. 执行目录为 `~/Desktop/chess-study/`，不是发布镜像 `chess-behavioral-lab`。输出新增表 `p4_v3_rows` 与 `p4_v3_successor_lines`，不改动 v1、v2 分片。
+6. 环境：安装 `lightgbm`；Python 3.9.6 可用，README 的 3.10+ 要求对本任务不构成阻碍，报告中注明实际版本。
+
+其余条款不变。

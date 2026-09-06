@@ -2,7 +2,7 @@
 
 Status: LOCKED 2026-09-05. Handed to Claude Code for execution.
 
-Language note: this English file is the governing version of SPEC v3. The Chinese file `paper4_spec_v3.md` is the original-language record of the lock (commits f084f80 and dc082ba, both pushed before any results existed); its content is identical to this file. Amendments after Amendment 1 are recorded in this English file only.
+Language note: this English file is the governing version of SPEC v3. The Chinese file `paper4_spec_v3_zh_lock.md` is the original-language record of the lock (commits f084f80 and dc082ba, both pushed before any results existed); its content is identical to this file. Amendments after Amendment 1 are recorded in this English file only.
 
 ## 0. Note to the implementer
 

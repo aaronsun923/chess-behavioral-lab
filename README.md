@@ -25,8 +25,14 @@ Zenodo community: https://zenodo.org/communities/chess-behavioral-lab
   - `probe_male_titled.py` — sampling probe for the male titled frame.
   - `style_skill_analysis.py`, `style_skill_robustness.py`, `fig3_mean_shift.py` — Paper 2 analyses: per-band PCA, Tucker's congruence, segmented regression, the measurement-artifact analysis, and figures.
   - `paper4_pilot.py`, `paper4_report.py`, `paper4b_pilot.py`, `paper4b_report.py`, `paper4b_figures.py` — Paper 4: engine evaluation pipeline (Stockfish, fixed depth 15, MultiPV 5), deviation-magnitude models, punishment-steepness (ΔRISK) analyses, and figures.
-- `specs/` — the locked specifications for the Paper 4 analyses: v1 (deviation structure and the complementarity test) and v2 (the risk-direction analysis).
-- `docs/` — pilot reports and the Paper 2 results file.
+  - `p4_v3_successor_eval.py` — SPEC v3: re-evaluates the 57,294 successor positions at the v1/v2 configuration and persists all five MultiPV lines, which v2 stored only in summary form.
+  - `p4_v3_consistency.py` — SPEC v3 Amendment 1 item 2: row-by-row check that the re-evaluation reproduces v2's `risk_steep` exactly; a stop condition if it does not.
+  - `p4_v3_build_rows.py` — SPEC v3 §3.1-§3.2: locates each opponent's actual reply, values it, and builds the opponent-perspective difficulty features on both branches.
+  - `p4_v3_analysis.py` — SPEC v3 §4-§7: the cross-fitted expected-error model, the H1-H4 tests, the v1 §7.2 comparison, the three robustness items, and the §9 report.
+  - `p4_v3_depth_check.py` — measures the §3.1 two-tier depth asymmetry directly by re-evaluating a random sample of in-PV replies.
+  - `p4_v3_posthoc.py` — SPEC v3 Amendment 3: post-hoc diagnostics appended to the report; changes no pre-registered estimate.
+- `specs/` — the locked specifications for the Paper 4 analyses: v1 (deviation structure and the complementarity test), v2 (the risk-direction analysis), and v3 (the §7.2 identification redesign; `paper4_spec_v3_en.md` is the governing English version, `paper4_spec_v3.md` the original-language lock record). v3 carries three amendments, all recorded in the English file: 1 permits re-evaluating the successor positions to recover the MultiPV lines v2 did not persist, 2 records how the crossed random effects are estimated, and 3 withdraws an invalid diagnostic and replaces it. Amendments 1 and 2 predate any results; 3 is dated and marked as recorded after them.
+- `docs/` — pilot reports, the Paper 2 results file, and the Paper 4 v3 report (`paper4_v3_REPORT.md`, with its figures in `p4_v3_figures/`).
 - `figures/` — the figures embedded in the papers.
 - `data/` — anonymized player-level aggregated indicators (see below).
 

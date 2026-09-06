@@ -276,3 +276,19 @@ All other clauses unchanged.
 4. **`spread_15` convention.** §3.2 defines `spread_15` as `WP_opp(1st) − WP_opp(5th)`. It is computed against the last available MultiPV line, which is v1's own convention for the same feature (`wp_best - wps[-1]`). The two are identical wherever the engine returned five lines — 56,541 of 57,294 successor positions, 98.7% — and differ only where it returned fewer. Matching v1 keeps the nuisance model's training features and its prediction features on a single definition, which §4.2 requires.
 
 All other clauses unchanged.
+
+---
+
+## Amendment 3 (2026-09-06, recorded after results)
+
+**Status**: recorded after the §9 delivery. This amendment changes **diagnostics only**. No test, band, model specification, or estimate changes under it; nothing in §6 was re-fitted because of it, and the §10 stop rule continues to hold.
+
+**Decisions**:
+
+1. **The §9.4 calibration-by-ΔRISK_steep-decile check is withdrawn; it is not a valid diagnostic as written.** On untreated rows, `ΔRISK_steep` is a property of that row's own move, and the row's `WPL` is the error of that same move, so the binning variable and the outcome are mechanically related. The nuisance model predicts from features of the **position** and cannot observe which move was chosen, so the plot **cannot be flat by construction** and its slope is not evidence of misspecification. This was a design error in the spec, not an implementation defect. The delivered profile is the signature of that mechanical relation: it is U-shaped in |ΔRISK_steep| — the least-sharp deciles are biased upward as strongly as the sharpest — and it is materially unchanged when the nuisance model is replaced by LightGBM under §7 item 3, which a genuine linear-specification failure would not survive. Consequently the deferral clause in §9.4, which sends the interpretation of H4 to §7 item 3 when this plot shows bias, no longer applies on this ground; §7 item 3 continues to be reported as robustness in its own right.
+
+2. **Replaced by a common-support calibration check.** On untreated rows: bin by the nuisance model's predicted value, and separately by deciles of `wp_level` and of `spread_15`; weight the untreated rows to the feature distribution of the treated rows; report obs − pred per bin. This asks the question §9.4 intended — is the model unbiased over the region of feature space where its predictions are actually applied — without conditioning on a property of the move that the model was never given.
+
+3. **§7 item 2's expectation of shrinkage toward zero assumed a homogeneous positive treatment effect and does not hold under heterogeneity.** Letting treated rows into the training set absorbs the treatment effect into the baseline only if that effect has one sign and one magnitude across rows; with a heterogeneous effect the `RES` coefficient need not shrink, and may grow. The observed growth is therefore reported as **a limitation on the magnitude of `RES`, not as invalidating its sign**. Both training-set versions are reported side by side, and neither is designated primary on the strength of this expectation.
+
+All other clauses unchanged.

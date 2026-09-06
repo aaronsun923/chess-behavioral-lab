@@ -25,7 +25,7 @@ Zenodo community: https://zenodo.org/communities/chess-behavioral-lab
   - `probe_male_titled.py` — sampling probe for the male titled frame.
   - `style_skill_analysis.py`, `style_skill_robustness.py`, `fig3_mean_shift.py` — Paper 2 analyses: per-band PCA, Tucker's congruence, segmented regression, the measurement-artifact analysis, and figures.
   - `paper4_pilot.py`, `paper4_report.py`, `paper4b_pilot.py`, `paper4b_report.py`, `paper4b_figures.py` — Paper 4: engine evaluation pipeline (Stockfish, fixed depth 15, MultiPV 5), deviation-magnitude models, punishment-steepness (ΔRISK) analyses, and figures.
-- `specs/` — the locked pre-registered specification for the Paper 4 risk-direction analysis.
+- `specs/` — the locked specifications for the Paper 4 analyses: v1 (deviation structure and the complementarity test) and v2 (the risk-direction analysis).
 - `docs/` — pilot reports and the Paper 2 results file.
 - `figures/` — the figures embedded in the papers.
 - `data/` — anonymized player-level aggregated indicators (see below).

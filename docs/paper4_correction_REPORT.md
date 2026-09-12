@@ -192,6 +192,8 @@ No core coefficient changed sign or CI-excludes-zero status, and the T-1 TOST ve
 
 Delivered as text; `specs/` is not edited.
 
+_2026-09-11: this corrected text was applied to `specs/paper4_spec_v3_en.md` in the commit after b6efaff._
+
 
 > ## Amendment 2 (2026-09-05, after lock, during execution; corrected 2026-09-11)
 >
@@ -213,6 +215,8 @@ Delivered as text; `specs/` is not edited.
 ## 7. Corrected text of `README.md` line 34 (§5 item 5)
 
 Delivered as text; `README.md` is not edited.
+
+_2026-09-11: this corrected line was applied to `README.md` in the commit after b6efaff._
 
 
 **Old:**

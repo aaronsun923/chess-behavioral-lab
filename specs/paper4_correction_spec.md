@@ -4,13 +4,15 @@ Date: 2026-09-11
 
 Status: LOCKED 2026-09-11. The lock takes effect at the commit that adds this file to `chess-behavioral-lab/specs/`, which must precede any re-run.
 
+Remark (2026-09-11): the paper input in §0, §4 and §5 changed from `docs/Sharper_Not_Safer_v6.docx` to `docs/Sharper_Not_Safer_v7.docx`, the version on Zenodo; input path only, no other change.
+
 ## 0. Note to the implementer
 
 Rules of SPEC v1 through v3 apply. Every item marked **[LOCKED]** is a research-design decision. If you believe one is wrong, stop and state your reasoning in the report; do not change it and keep running. No engine work. No new models, no new samples, no new covariates: this correction changes the estimator and nothing else.
 
 Context: the finding below arose in the feasibility audit for SPEC v4 (2026-09-11). SPEC v4 was not run.
 
-Inputs: the code and reports in this repository, the v1/v2/v3 data in `~/Desktop/chess-study/`, and the paper as `docs/Sharper_Not_Safer_v6.docx`. If the paper file is absent at run time, stop and report.
+Inputs: the code and reports in this repository, the v1/v2/v3 data in `~/Desktop/chess-study/`, and the paper as `docs/Sharper_Not_Safer_v7.docx`. If the paper file is absent at run time, stop and report.
 
 ## 1. The finding
 
@@ -175,7 +177,7 @@ For each core coefficient, a published conclusion stands if both of the followin
 
 For H1 (T-1), the conclusion also requires the TOST verdict to be unchanged. The verdict is recomputed from the new fit's intercept and standard error with v3's `tost` (`p4_v3_analysis.py:149`): ±0.5 WP points, df = N − 1, α = .05. The published verdict is overall p = 1, "NOT statistically equivalent to zero".
 
-If any required element changes, the correction report names the sentence in the paper that must change, quoting it with its location in `docs/Sharper_Not_Safer_v6.docx`. If the affected conclusion is not stated in the paper, the correction report says so.
+If any required element changes, the correction report names the sentence in the paper that must change, quoting it with its location in `docs/Sharper_Not_Safer_v7.docx`. If the affected conclusion is not stated in the paper, the correction report says so.
 
 No other interpretation.
 
@@ -188,7 +190,7 @@ Report at `docs/paper4_correction_REPORT.md`:
    - the per-optimizer record and degeneracy status (§2 item 9);
    - the N, reproduction and figure-coverage checks (§3.1 items 1–3);
    - the full coefficient tables in an appendix.
-3. **The list of sentences that must change,** each quoted from `docs/Sharper_Not_Safer_v6.docx` with its location, and with the model ID and core coefficient that triggers it under §4.
+3. **The list of sentences that must change,** each quoted from `docs/Sharper_Not_Safer_v7.docx` with its location, and with the model ID and core coefficient that triggers it under §4.
 4. **The corrected text of v3 Amendment 2.**
 5. **The corrected text of `README.md` line 34** (its description of Amendment 2), old and new quoted.
 

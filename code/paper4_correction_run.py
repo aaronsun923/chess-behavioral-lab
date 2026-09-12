@@ -278,16 +278,56 @@ def cmd_rerun(a):
     print(f'rerun {a.builder}: {len(recs)} fit_mixed calls in {(time.time()-t0)/60:.1f} min')
 
 
+# ======================================================= paper §4.3 / Figure C
+def cmd_predict(a):
+    """Predicted mean ΔRISK_steep at time_pressure_z = ±2, by the delta method exactly as
+    paper4b_figures.py:fig_c computes it, from the unchanged fit_mixed and from fit_mixed_v2
+    on the same rows (the figC-primary fit, covered by B-1)."""
+    import numpy as np
+    work = os.path.abspath(a.work)
+    os.chdir(work)
+    import paper4_report as R
+    from paper4_mixed_v2 import fit_mixed_v2
+
+    def pred(res, zz):
+        cov = res.cov_params(); b0 = res.params['Intercept']; bt = res.params['time_pressure_z']
+        v = (cov.loc['Intercept', 'Intercept'] + zz**2 * cov.loc['time_pressure_z', 'time_pressure_z']
+             + 2 * zz * cov.loc['Intercept', 'time_pressure_z'])
+        se = float(np.sqrt(v)); p = float(b0 + bt * zz)
+        return dict(mean=p, lo=p - 1.96 * se, hi=p + 1.96 * se)
+
+    orig, out = R.fit_mixed, {}
+
+    def intercept(formula, data, label):
+        res, ols, d = orig(formula, data, label)
+        if label == 'figC-primary':
+            nres, nd, info = fit_mixed_v2(formula, data, label)
+            assert len(nd) == len(d), f'{label}: row mismatch'
+            out.update(rows=len(d), new_selected=info['selected'], new_status=info['status'],
+                       old={str(z): pred(res, z) for z in (-2, 2)},
+                       new={str(z): pred(nres, z) for z in (-2, 2)} if nres is not None else None)
+        return res, ols, d
+
+    R.fit_mixed = intercept
+    runpy.run_path(os.path.join(CODE, 'paper4b_figures.py'), run_name='__main__')
+    jdump(out, os.path.join(work, 'predictions.json'))
+    print(f'predictions: {json.dumps(out)}')
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('stage', choices=['setup', 'verify', 'rerun', 'report'])
+    ap.add_argument('stage', choices=['setup', 'verify', 'rerun', 'predict', 'report', 'numbers'])
     ap.add_argument('--data', default='~/Desktop/chess-study')
     ap.add_argument('--work', required=True)
     ap.add_argument('--builder', choices=['v1', 'b4report', 'b4figs', 'v3'])
     ap.add_argument('--out', default=os.path.join(REPO, 'docs', 'paper4_correction_REPORT.md'))
+    ap.add_argument('--numbers-out', default=os.path.join(REPO, 'docs', 'paper4_correction_numbers.md'))
     a = ap.parse_args()
     if a.stage == 'report':
         import paper4_correction_report as CR
         CR.write(a.work, a.out)
+    elif a.stage == 'numbers':
+        import paper4_correction_numbers as CN
+        CN.write(a.work, a.numbers_out)
     else:
-        {'setup': cmd_setup, 'verify': cmd_verify, 'rerun': cmd_rerun}[a.stage](a)
+        {'setup': cmd_setup, 'verify': cmd_verify, 'rerun': cmd_rerun, 'predict': cmd_predict}[a.stage](a)

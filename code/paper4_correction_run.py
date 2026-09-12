@@ -17,7 +17,7 @@ the rows (§3.1 item 1). Its fit_mixed calls are intercepted: the unchanged fit_
 its result is handed back to the script (§3.1 item 2), and fit_mixed_v2 is fitted on the same
 rows (§3.1 item 4).
 """
-import os, sys, io, json, time, runpy, hashlib, argparse, platform, contextlib
+import os, sys, io, json, time, runpy, hashlib, argparse, platform, contextlib, subprocess
 
 CODE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(CODE)
@@ -279,22 +279,25 @@ def cmd_rerun(a):
 
 
 # ======================================================= paper §4.3 / Figure C
+def delta_pred(res, zz):
+    """Predicted mean at time_pressure_z = zz with its delta-method 95% CI — the formula of
+    paper4b_figures.py:fig_c."""
+    import numpy as np
+    cov = res.cov_params(); b0 = res.params['Intercept']; bt = res.params['time_pressure_z']
+    v = (cov.loc['Intercept', 'Intercept'] + zz**2 * cov.loc['time_pressure_z', 'time_pressure_z']
+         + 2 * zz * cov.loc['Intercept', 'time_pressure_z'])
+    se = float(np.sqrt(v)); p = float(b0 + bt * zz)
+    return dict(mean=p, lo=p - 1.96 * se, hi=p + 1.96 * se)
+
+
 def cmd_predict(a):
     """Predicted mean ΔRISK_steep at time_pressure_z = ±2, by the delta method exactly as
     paper4b_figures.py:fig_c computes it, from the unchanged fit_mixed and from fit_mixed_v2
     on the same rows (the figC-primary fit, covered by B-1)."""
-    import numpy as np
     work = os.path.abspath(a.work)
     os.chdir(work)
     import paper4_report as R
     from paper4_mixed_v2 import fit_mixed_v2
-
-    def pred(res, zz):
-        cov = res.cov_params(); b0 = res.params['Intercept']; bt = res.params['time_pressure_z']
-        v = (cov.loc['Intercept', 'Intercept'] + zz**2 * cov.loc['time_pressure_z', 'time_pressure_z']
-             + 2 * zz * cov.loc['Intercept', 'time_pressure_z'])
-        se = float(np.sqrt(v)); p = float(b0 + bt * zz)
-        return dict(mean=p, lo=p - 1.96 * se, hi=p + 1.96 * se)
 
     orig, out = R.fit_mixed, {}
 
@@ -304,8 +307,8 @@ def cmd_predict(a):
             nres, nd, info = fit_mixed_v2(formula, data, label)
             assert len(nd) == len(d), f'{label}: row mismatch'
             out.update(rows=len(d), new_selected=info['selected'], new_status=info['status'],
-                       old={str(z): pred(res, z) for z in (-2, 2)},
-                       new={str(z): pred(nres, z) for z in (-2, 2)} if nres is not None else None)
+                       old={str(z): delta_pred(res, z) for z in (-2, 2)},
+                       new={str(z): delta_pred(nres, z) for z in (-2, 2)} if nres is not None else None)
         return res, ols, d
 
     R.fit_mixed = intercept
@@ -314,9 +317,83 @@ def cmd_predict(a):
     print(f'predictions: {json.dumps(out)}')
 
 
+# ======================================================= figures B and C, corrected
+FIGS = ['figB_pilot_vs_full', 'figC_robustness_ladder']
+FIG_ROWS = {31: ('figB-500', None), 32: ('figB-full', None), 33: ('figC-primary', None),   # rows of
+            34: ('figC-var', None), 35: ('figC-band10', None), 36: ('figC-liq', None),     # docs/paper4_
+            37: ('figC-primary', -2), 38: ('figC-primary', 2)}                             # correction_numbers.md
+
+
+def cmd_figures(a):
+    """Figures B and C redrawn from fit_mixed_v2. Same interception point as cmd_rerun: each
+    fit_mixed call in paper4b_figures.py runs the unchanged fit_mixed and fit_mixed_v2 on the same
+    rows, but the fit handed back to the script is fit_mixed_v2's. The values the new figures print
+    must equal docs/paper4_correction_numbers.md before any published file is replaced; the
+    committed versions are kept as *_v1.png and *_v1.pdf."""
+    work = os.path.abspath(a.work)
+    fig_repo = os.path.join(REPO, 'figures', 'paper4')
+    os.chdir(work)
+    import paper4_report as R
+    from paper4_mixed_v2 import fit_mixed_v2
+
+    orig, got = R.fit_mixed, {}
+
+    def intercept(formula, data, label):
+        res, ols, d = orig(formula, data, label)
+        nres, nd, info = fit_mixed_v2(formula, data, label)
+        if nres is None:
+            raise SystemExit(f'STOP [§2 item 7]: {label}: {info["status"]}; figures left unchanged')
+        assert len(nd) == len(d), f'{label}: row mismatch'
+        ci = nres.conf_int().loc['Intercept']
+        got[label] = dict(est=[float(nres.params['Intercept']), float(ci[0]), float(ci[1])],
+                          selected=info['selected'], rows=len(d))
+        if label == 'figC-primary':
+            for z in (-2, 2):
+                q = delta_pred(nres, z)
+                got[f'{label}@{z}'] = dict(est=[q['mean'], q['lo'], q['hi']])
+        return nres, ols, d
+
+    R.fit_mixed = intercept
+    runpy.run_path(os.path.join(CODE, 'paper4b_figures.py'), run_name='__main__')
+
+    want = {}
+    for line in open(os.path.join(REPO, 'docs', 'paper4_correction_numbers.md')):
+        c = [x.strip() for x in line.strip().strip('|').split('|')]
+        if len(c) > 6 and c[0].isdigit() and int(c[0]) in FIG_ROWS:
+            want[int(c[0])] = c[6].strip('`')
+    check = []
+    for n, (label, z) in FIG_ROWS.items():
+        e = got[label if z is None else f'{label}@{z}']['est']
+        s = f'{e[0]:+.3f} [{e[1]:+.3f}, {e[2]:+.3f}]'.replace('-', '−')
+        check.append(dict(row=n, fit=label, z=z, printed=s, numbers_doc=want.get(n), match=s == want.get(n)))
+        print(f'  [{"OK " if s == want.get(n) else "MISMATCH"}] #{n} {label}{"" if z is None else f" z={z}"}: '
+              f'figure {s} | numbers doc {want.get(n)}')
+    out = dict(fits=got, check=check, files=[])
+    if not all(x['match'] for x in check):
+        jdump(out, os.path.join(work, 'figures.json'))
+        raise SystemExit('STOP: printed values differ from the numbers table; published figures left unchanged')
+
+    for name in FIGS:
+        for ext in ('png', 'pdf'):
+            rel = f'figures/paper4/{name}.{ext}'
+            v1 = os.path.join(fig_repo, f'{name}_v1.{ext}')
+            committed = subprocess.run(['git', 'show', f'HEAD:{rel}'], cwd=REPO, capture_output=True).stdout
+            if not committed:
+                raise SystemExit(f'STOP: {rel} not found at HEAD')
+            if not os.path.exists(v1):
+                open(v1, 'wb').write(committed)          # the published version, from git
+            with open(os.path.join(work, 'paper4b_figures', f'{name}.{ext}'), 'rb') as src:
+                open(os.path.join(REPO, rel), 'wb').write(src.read())
+            out['files'].append(dict(file=rel, v1=os.path.relpath(v1, REPO),
+                                     v1_sha256=hashlib.sha256(open(v1, 'rb').read()).hexdigest(),
+                                     new_sha256=sha256(os.path.join(REPO, rel))))
+    jdump(out, os.path.join(work, 'figures.json'))
+    print('figures replaced; published versions kept as *_v1')
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('stage', choices=['setup', 'verify', 'rerun', 'predict', 'report', 'numbers'])
+    ap.add_argument('stage', choices=['setup', 'verify', 'rerun', 'predict', 'figures', 'report', 'numbers'])
     ap.add_argument('--data', default='~/Desktop/chess-study')
     ap.add_argument('--work', required=True)
     ap.add_argument('--builder', choices=['v1', 'b4report', 'b4figs', 'v3'])
@@ -330,4 +407,5 @@ if __name__ == '__main__':
         import paper4_correction_numbers as CN
         CN.write(a.work, a.numbers_out)
     else:
-        {'setup': cmd_setup, 'verify': cmd_verify, 'rerun': cmd_rerun, 'predict': cmd_predict}[a.stage](a)
+        {'setup': cmd_setup, 'verify': cmd_verify, 'rerun': cmd_rerun, 'predict': cmd_predict,
+         'figures': cmd_figures}[a.stage](a)

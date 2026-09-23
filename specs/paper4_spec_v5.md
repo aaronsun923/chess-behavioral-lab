@@ -1,6 +1,6 @@
 # SPEC v5: Engine Depth as a Knob on Baseline Fallibility
 
-Status: DRAFT 2026-09-22 (second draft; the first draft's H1 was an identity and its H2 was confounded by engine error, see §1). Becomes LOCKED when §10 is confirmed and the file is pushed to `chess-behavioral-lab` before any engine run at depths other than 15.
+Status: LOCKED 2026-09-22. All §10 parameters confirmed by the designer on 2026-09-22. Pushed to `chess-behavioral-lab` as `specs/paper4_spec_v5.md` before any engine run at depths other than 15; the push commit is the lock timestamp. Any change after this line is an amendment appended below §11, dated, marked pre- or post-results. Drafting history: the first draft's H1 was an identity and its H2 was confounded by engine error (see §1); draft 2 replaced them with the conditional-error design; drafts 3 and 4 added the noise benchmark, the common row set, the λ_d floor, and the difference-based comparison rule.
 
 ## 0. Note to the implementer
 
@@ -84,7 +84,7 @@ New depth-15 evaluations needed: (a) the position after the human's move on the 
 
 Stop after the pilot. Stop after the full run. The designer decides whether this becomes a section of Paper 4 or a separate short paper.
 
-## 10. Parameters awaiting the designer's confirmation
+## 10. Parameters (confirmed 2026-09-22)
 
 | Parameter | Proposed | Location |
 |---|---|---|

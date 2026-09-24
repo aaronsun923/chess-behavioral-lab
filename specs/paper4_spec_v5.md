@@ -105,3 +105,21 @@ Stop after the pilot. Stop after the full run. The designer decides whether this
 ## 11. Expected cost
 
 Root searches at depths 4, 8, 12 on 50,021 positions: minutes each; single-PV depth-15 root search on 50,021 positions: under an hour. New depth-15 evaluations: 21,374 for the human's move on non-deviation rows, once; per depth, every row where `best_d` differs from both the human's move and `best_15`, largest at depth 4; plus any single-PV `best_15` successors not already evaluated. Depth-20 evaluations: 6,000 plus the best_8 and best_12 positions on the subsample where they differ, at most a few thousand more. Total engine time on 8 processes at 1 thread each: two to four days, to be revised after the count.
+
+## Amendment A1 (pre-results), 2026-09-24
+
+Trigger. The pilot truth check failed the SD rule: max SD(V20 − V15) = 1.458 against the bound 0.25 × SD(e_4) = 0.824 (reports/spec_v5_pilot.md §7 (SD rule), §6 (V20 − V15 table) and §12). The failure is not tail-driven (MAD scale 0.95). Var(V20 − V15)/Var(e_d) is 0.17–0.20 at depth 4 and 1.6–1.9 at depth 12, so under a depth-15 ruler depth 12 is unmeasurable and the cross-depth comparison of §6 cannot be made. Nothing from §6 or §7 has been computed.
+
+A1.1 Truth. The ruler is depth 20 throughout. V20(x) replaces V15(x) in §3, §4, §6 and §7, with the same successor configuration (MultiPV 5, Threads = 1, Hash = 128, ucinewgame before every search). Existing depth-15 evaluations are kept and become robustness item 2: H1 and H2 on the depth-15 ruler, all rows.
+
+A1.2 Anchor. best_20 is the first choice of a single-PV depth-20 root search on all 50,021 positions, produced as in §3. L_h = V20(best_20) − V20(h); e_d = V20(best_20) − V20(best_d) for d in {2, 4, 8, 12, 15}; I_d = e_d − L_h, descriptive only. best_15 (single-PV) is now a shallow baseline like the others. The H1 primary model becomes V20(h) ~ V20(best_d) + V20(best_20) + covariates. HORIZON is computed on the depth-20 PV after best_d.
+
+A1.3 Depth 2. Baseline depths are 2, 4, 8, 12, 15. Depth 2 is added because E_4 = 1.33 WP points on the 2,000 subsample rows, below the human's mean loss (mean L_h = 2.26 on the same rows), and a larger Var(e_d) raises λ_d. The H1 prediction reads: the disattenuated coefficient is smaller at the shallowest admitted depth than at the deepest admitted depth, by more than the noise benchmark, tested as the bootstrap interval on their difference (§6, §3 λ_d floor unchanged).
+
+A1.4 Truth check for the depth-20 ruler. The first 1,000 rows of the subsample in draw order are evaluated at depth 25 for the positions after h, best_20, and each best_d where distinct. b_d and λ_d are computed from V25 − V20 as §3 defines them, with SD(e_4) on these rows. Pass rules as §3. If the SD rule fails again, there is no further escalation: the study reports λ_d per depth and runs H1 and H2 only on depths with λ_d ≥ 0.5; if fewer than two depths qualify, the study stops and is reported as measurement-limited, with the pilot and check numbers, and no §6 test is run.
+
+A1.5 k. k = 6 stands. The HORIZON = 1 share at depth 12 is recomputed on depth-20 PVs before H2 is fitted; if outside 20–80%, k is changed by amendment A2 before any H2 fit.
+
+A1.6 Pilot. §5 is satisfied by the completed pilot. The full run proceeds after the implementer reports the depth-20 and depth-25 evaluation counts and a cost estimate at the sustained rate measured by the throttling check (200 stored depth-20 positions re-run at nproc = 6 and at nproc = 8, kept out of the study store, compared with stored values as a determinism check).
+
+A1.7 Order of runs. Depth-2 root search; depth-20 root search; throttling check; counts and cost report; stop. The depth-25 check and the depth-20 evaluations follow only after the designer confirms the cost.

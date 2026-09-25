@@ -123,3 +123,7 @@ A1.5 k. k = 6 stands. The HORIZON = 1 share at depth 12 is recomputed on depth-2
 A1.6 Pilot. §5 is satisfied by the completed pilot. The full run proceeds after the implementer reports the depth-20 and depth-25 evaluation counts and a cost estimate at the sustained rate measured by the throttling check (200 stored depth-20 positions re-run at nproc = 6 and at nproc = 8, kept out of the study store, compared with stored values as a determinism check).
 
 A1.7 Order of runs. Depth-2 root search; depth-20 root search; throttling check; counts and cost report; stop. The depth-25 check and the depth-20 evaluations follow only after the designer confirms the cost.
+
+### A1.4 outcome (pre-results), 2026-09-24
+
+Source: `reports/spec_v5_A1_check.md` (depth-25 check on the first 1,000 subsample rows in draw order). The SD rule failed under the depth-20 ruler: largest SD(V25 − V20) = 1.157 against the bound 0.25 × SD(e_4) = 0.931. λ_d = 0.947, 0.898, 0.648, −0.139, −1.503 for d = 2, 4, 8, 12, 15. By A1.4, H1 and H2 run on depths 2, 4 and 8 only; the cross-depth comparison is d = 2 against d = 8; depths 12 and 15 are excluded from §6 and appear only in the descriptive I_d curve. The HORIZON rule passed at all depths.

@@ -6,18 +6,32 @@ authors:
   - family-names: Sun
     given-names: Aaron
     orcid: "https://orcid.org/0009-0000-2412-4727"
+    affiliation: "San Marino High School"
 license: MIT
 repository-code: "https://github.com/aaronsun923/chess-behavioral-lab"
+doi: 10.5281/zenodo.22285433
 references:
   - type: article
     title: "Conditional by Design: Sex Differences in Chess Middlegame Decision Style Emerge at the Expert Tier"
+    authors:
+      - family-names: Sun
+        given-names: Aaron
     doi: 10.5281/zenodo.22262168
   - type: article
     title: "Same Axis, Different Place: How Middlegame Style Shifts Across the Expertise Gradient"
+    authors:
+      - family-names: Sun
+        given-names: Aaron
     doi: 10.5281/zenodo.22262896
   - type: article
     title: "Opening Convention, Middlegame Freedom: What Elite Stylistic Variation Implies for Developmental Chess Pedagogy"
+    authors:
+      - family-names: Sun
+        given-names: Aaron
     doi: 10.5281/zenodo.22265831
   - type: article
     title: "Sharper, Not Safer: The Direction of Human Deviations from Engine Play"
+    authors:
+      - family-names: Sun
+        given-names: Aaron
     doi: 10.5281/zenodo.22267000

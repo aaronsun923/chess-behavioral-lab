@@ -89,3 +89,17 @@ Per depth d and coverage q, on all N rows:
 ## 10. Expected cost
 
 Feature construction from FEN: minutes. Selector fits: 2 selectors × 3 depths × 5 folds × up to 500 iterations on 40,000 rows, a few minutes each on one core. Bootstrap on means: minutes. Total under two hours of compute; one day including implementation and the report.
+
+## Outcome (post-results), 2026-09-28
+
+Source: `reports/spec_v6_selector.md` (results commit 165e9ad). §2 row set, 49,907 rows; primary assistant-free selectors (HistGradientBoostingRegressor as §3); q = 0.10; game-clustered percentile bootstrap, 2,000 draws, seed 20261001, out-of-fold scores fixed. WP points on the V20 ruler.
+
+| Hypothesis | Estimate [95% interval] | Condition holds | Recorded prediction correct |
+|---|---|---|---|
+| S1: G^h_2(0.10) > 0, interval excluding zero | 0.0051 [−0.0121, 0.0223] | no | no |
+| S2: G^h_4(0.10) > 0, interval excluding zero | −0.0095 [−0.0215, 0.0016] | no | yes |
+| S3: G^h_8(0.10) ≤ 0 or interval including zero | −0.0523 [−0.0632, −0.0424] | yes | yes |
+| S4: G^h_d(0.10) − G^rand_d(0.10) > 0 at every depth | d = 2: 0.0557 [0.0397, 0.0720]; d = 4: 0.0829 [0.0708, 0.0944]; d = 8: 0.1243 [0.1134, 0.1353] | yes | yes |
+| S5: D_d(0.10) < 0 at every depth | d = 2: −0.2623 [−0.2916, −0.2338]; d = 4: −0.2239 [−0.2480, −0.1995]; d = 8: −0.1435 [−0.1588, −0.1285] | yes | yes |
+
+S1 by selector model: with ridge regression in place of gradient boosting (§7 item 2; same features, folds and target; alpha 1.0, no tuning), G^h_2(0.10) = 0.0323 [0.0176, 0.0465], and the S1 condition holds. The pre-registered S1 result is the gradient-boosting selector's: the condition does not hold. S2 to S5 are the same under ridge.

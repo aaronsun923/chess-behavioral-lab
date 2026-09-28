@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import p5_common as C
 import p5_evals as EV
 from p5_pilot import horizon
-from paper4_mixed_v2 import fit_mixed_v2
+from paper4_mixed_v2 import fit_mixed_v2, rows_for
 from p5_fit import fit_selected
 
 RES = os.path.join(C.OUT_DIR, 'results')
@@ -378,6 +378,61 @@ def stage_h3():
                     pickle.dump(o, open(p, 'wb'))
 
 
+# ================================================================== exploratory X.d: coincidence rows
+def stage_coinc():
+    """Exploratory, post-results (2026-09-28). Per admitted depth: (1) H1 primary by
+    fit_mixed_v2 on coincidence rows (h = best_d), point estimate; (2) exact OLS
+    (Frisch-Waugh) decomposition of the V20(best_d) slope into coincidence and
+    non-coincidence rows: with u = residual of V20(best_d) on the other H1 regressors over
+    all model rows, beta = sum_g w_g b_g, w_g = sum_g u^2 / sum u^2, b_g = sum_g u y / sum_g u^2.
+    Weights are also given with u residualized on V20(best_20) alone."""
+    r = load_rows()
+    out = {}
+    for d in D_ADM:
+        p = os.path.join(RES, f'coinc_d{d}.pkl')
+        if os.path.exists(p):
+            o = pickle.load(open(p, 'rb'))                   # mixed fit cached; decomposition recomputed
+        else:
+            c = r[r[f'hb_{d}'] == 1]
+            res, rows, info = fit_mixed_v2(h1_formula(d), c, f'X_coinc_d{d}')
+            o = {'n_coinc': info['n'], 'status': info['status'], 'selected': info['selected'],
+                 'sweep': [{k: x[k] for k in ('method', 'converged', 'llf', 'degenerate', 'seconds')} for x in info['sweep']],
+                 'max_abs_Vh_minus_Vbd': float((c.V20_h - c[f'V20_b{d}']).abs().max())}
+            if res is not None:
+                o.update(beta=float(res.fe_params[f'V20_b{d}']), beta_b20=float(res.fe_params['V20_b20']),
+                         residual_var=float(res.scale))
+        m = rows_for(h1_formula(d), r)
+        y = m.V20_h.values; x = m[f'V20_b{d}'].values; g = m[f'hb_{d}'].values == 1
+        for tag, cols in [('cov', ['V20_b20'] + COV), ('b20', ['V20_b20'])]:
+            Z = np.column_stack([np.ones(len(m))] + [m[k].values for k in cols])
+            with np.errstate(all='ignore'):
+                u = x - Z @ np.linalg.lstsq(Z, x, rcond=None)[0]
+            ss = (u ** 2).sum()
+            dec = {'n_model': len(m), 'row_share_coinc': float(g.mean()),
+                   'w_coinc': float((u[g] ** 2).sum() / ss), 'w_non': float((u[~g] ** 2).sum() / ss),
+                   'b_coinc': float((u[g] * y[g]).sum() / (u[g] ** 2).sum()),
+                   'b_non': float((u[~g] * y[~g]).sum() / (u[~g] ** 2).sum()),
+                   'beta_ols': float((u * y).sum() / ss)}
+            dec['check'] = dec['w_coinc'] * dec['b_coinc'] + dec['w_non'] * dec['b_non'] - dec['beta_ols']
+            # within-group view: each group's own OLS of y on V20(best_d) and the same regressors;
+            # weights = each group's within-group residual variance of V20(best_d);
+            # beta_ols - (w_c^w s_c + w_n^w s_n) = between-group term (coincidence correlates with u)
+            wg = {}
+            for gname, gm in [('coinc', g), ('non', ~g)]:
+                Zg = Z[gm]; xg = x[gm]; yg = y[gm]
+                with np.errstate(all='ignore'):
+                    ug = xg - Zg @ np.linalg.lstsq(Zg, xg, rcond=None)[0]
+                wg[gname] = ((ug ** 2).sum(), float((ug * yg).sum() / (ug ** 2).sum()))
+            tot = wg['coinc'][0] + wg['non'][0]
+            dec.update(ww_coinc=float(wg['coinc'][0] / tot), ww_non=float(wg['non'][0] / tot),
+                       slope_within_coinc=wg['coinc'][1], slope_within_non=wg['non'][1])
+            dec['within_mixture'] = dec['ww_coinc'] * dec['slope_within_coinc'] + dec['ww_non'] * dec['slope_within_non']
+            dec['between_term'] = dec['beta_ols'] - dec['within_mixture']
+            o[f'decomp_{tag}'] = dec
+        pickle.dump(o, open(p, 'wb')); out[d] = o
+        print(d, {k: v for k, v in o.items() if k != 'sweep'}, flush=True)
+
+
 # ================================================================== robustness (2): depth-15 ruler
 def rob2_tasks():
     """Depth-15 evaluations after best_4 needed on all rows with best_4 != best_15_singlepv:
@@ -444,9 +499,9 @@ def stage_rob2rows():
 
 if __name__ == '__main__':
     a = sys.argv[1:]
-    if a[0] in ('rob2count', 'rob2eval', 'rob2rows', 'h3'):
+    if a[0] in ('rob2count', 'rob2eval', 'rob2rows', 'h3', 'coinc'):
         {'rob2count': stage_rob2count, 'rob2eval': stage_rob2eval, 'rob2rows': stage_rob2rows,
-         'h3': stage_h3}[a[0]]()
+         'h3': stage_h3, 'coinc': stage_coinc}[a[0]]()
     elif a[0] == 'prep':
         stage_prep()
     elif a[0] == 'points':

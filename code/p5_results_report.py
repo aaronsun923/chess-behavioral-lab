@@ -340,6 +340,39 @@ def main():
             nm = f'R1_{o}_d{d}_k4'; p = P(nm); c = ci([coef(x, nm, f'HORIZON_{d}_k4') for x in rob_d])
             A(f"| {d} | {lab} | {p['n']:,} | {f4(p['params'][f'HORIZON_{d}_k4'])} | {fmt_ci(c[0], c[1])} | {c[2]:,} |")
     A('')
+    A('### X.d Coincidence rows (h = best_d) and the mixture weights of the V20(best_d) slope\n')
+    A('Point estimates only, no bootstrap. On coincidence rows h and best_d are the same move, so V20(h) and V20(best_d) are the same stored evaluation of the same position '
+      '(max |V20(h) − V20(best_d)| below); the H1 primary fitted there is an identity check.\n')
+    A('| d | Coincidence rows (model N) | max \\|V20(h) − V20(best_d)\\| | fit_mixed_v2 status (selected) | β_d | Residual variance |\n|---|---|---|---|---|---|')
+    co = {d: pickle.load(open(os.path.join(R.RES, f'coinc_d{d}.pkl'), 'rb')) for d in D}
+    for d in D:
+        o = co[d]
+        A(f"| {d} | {o['n_coinc']:,} | {o['max_abs_Vh_minus_Vbd']:.1e} | {o['status']} ({o['selected']}) | "
+          f"{f4(o.get('beta', np.nan))} | {o.get('residual_var', np.nan):.1e} |")
+    A('\nShare of the conditional variance. u = residual of V20(best_d) on the other H1 regressors (V20(best_20) and the covariates) over all model rows, OLS; '
+      'w_c = Σ over coincidence rows of u² / Σ u², the coincidence rows\' share of Var(V20(best_d) | regressors); w_n = 1 − w_c. '
+      'The same share with u residualized on V20(best_20) alone is given as well.\n')
+    A('| d | Model N | Coincidence row share | w_c given all H1 regressors | w_n | w_c given V20(best_20) only | w_n |\n|---|---|---|---|---|---|---|')
+    for d in D:
+        a = co[d]['decomp_cov']; b = co[d]['decomp_b20']
+        A(f"| {d} | {a['n_model']:,} | {a['row_share_coinc']:.4f} | {a['w_coinc']:.4f} | {a['w_non']:.4f} | {b['w_coinc']:.4f} | {b['w_non']:.4f} |")
+    A('\nMixture of within-group slopes (OLS, all H1 regressors). Each group\'s own OLS slope on V20(best_d) with the other H1 regressors; weights w^w = each group\'s share of the '
+      'within-group residual variance of V20(best_d). The pooled OLS slope equals the within-group mixture plus a between-group term, which is non-zero because coincidence '
+      '(h = best_d) is correlated with V20(best_d) given the other regressors. Mixed-model β_d of §1 (all rows) and §X.a (h ≠ best_d) are shown for reference; the decomposition is OLS.\n')
+    A('| d | w^w_c | Slope, coincidence rows | w^w_n | Slope, h ≠ best_d rows | Within mixture | Between-group term | Pooled β_OLS | Mixed β_d, all rows (§1) | Mixed β_d, h ≠ best_d (§X.a) |\n|---|---|---|---|---|---|---|---|---|---|')
+    xd_rows = []
+    for d in D:
+        a = co[d]['decomp_cov']; b = co[d]['decomp_b20']
+        A(f"| {d} | {a['ww_coinc']:.4f} | {f4(a['slope_within_coinc'])} | {a['ww_non']:.4f} | {f4(a['slope_within_non'])} | {f4(a['within_mixture'])} | "
+          f"{f4(a['between_term'])} | {f4(a['beta_ols'])} | {f4(beta[d])} | {f4(P(f'X_H1_d{d}')['params'][f'V20_b{d}'])} |")
+        xd_rows.append(dict(d=d, n_model=a['n_model'], row_share_coinc=a['row_share_coinc'],
+                            w_coinc=a['w_coinc'], w_non=a['w_non'], w_coinc_b20_only=b['w_coinc'],
+                            ww_coinc=a['ww_coinc'], slope_within_coinc=a['slope_within_coinc'],
+                            ww_non=a['ww_non'], slope_within_non=a['slope_within_non'],
+                            within_mixture=a['within_mixture'], between_term=a['between_term'], beta_ols=a['beta_ols'],
+                            coinc_mixed_beta=co[d].get('beta'), coinc_status=co[d]['status']))
+    pd.DataFrame(xd_rows).to_csv(os.path.join(OUT, 'exploratory_coincidence.csv'), index=False)
+    A('')
     open(os.path.join(C.REPO, 'reports', 'spec_v5_results.md'), 'w').write('\n'.join(L))
 
     # ------------------------------------------------------------ figures

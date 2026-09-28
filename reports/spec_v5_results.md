@@ -336,3 +336,29 @@ Already estimated as part of robustness (1) (§6.1, models R1_hb_d{2,4,8}_k4, 50
 | 4 | 1[h = best_d] | 23,956 | 0.0369 | [0.0217, 0.0472] | 500 |
 | 8 | L_h | 18,277 | -0.0556 | [-0.2093, 0.0905] | 500 |
 | 8 | 1[h = best_d] | 18,277 | 0.0379 | [0.0221, 0.0487] | 500 |
+
+### X.d Coincidence rows (h = best_d) and the mixture weights of the V20(best_d) slope
+
+Point estimates only, no bootstrap. On coincidence rows h and best_d are the same move, so V20(h) and V20(best_d) are the same stored evaluation of the same position (max |V20(h) − V20(best_d)| below); the H1 primary fitted there is an identity check.
+
+| d | Coincidence rows (model N) | max \|V20(h) − V20(best_d)\| | fit_mixed_v2 status (selected) | β_d | Residual variance |
+|---|---|---|---|---|---|
+| 2 | 21,276 | 0.0e+00 | ok (powell) | 1.0000 | 1.6e-29 |
+| 4 | 20,496 | 0.0e+00 | ok (powell) | 1.0000 | 4.7e-29 |
+| 8 | 21,462 | 0.0e+00 | ok (powell) | 1.0000 | 5.2e-29 |
+
+Share of the conditional variance. u = residual of V20(best_d) on the other H1 regressors (V20(best_20) and the covariates) over all model rows, OLS; w_c = Σ over coincidence rows of u² / Σ u², the coincidence rows' share of Var(V20(best_d) | regressors); w_n = 1 − w_c. The same share with u residualized on V20(best_20) alone is given as well.
+
+| d | Model N | Coincidence row share | w_c given all H1 regressors | w_n | w_c given V20(best_20) only | w_n |
+|---|---|---|---|---|---|---|
+| 2 | 49,921 | 0.4262 | 0.1957 | 0.8043 | 0.1845 | 0.8155 |
+| 4 | 49,921 | 0.4106 | 0.2069 | 0.7931 | 0.1994 | 0.8006 |
+| 8 | 49,921 | 0.4299 | 0.2070 | 0.7930 | 0.2056 | 0.7944 |
+
+Mixture of within-group slopes (OLS, all H1 regressors). Each group's own OLS slope on V20(best_d) with the other H1 regressors; weights w^w = each group's share of the within-group residual variance of V20(best_d). The pooled OLS slope equals the within-group mixture plus a between-group term, which is non-zero because coincidence (h = best_d) is correlated with V20(best_d) given the other regressors. Mixed-model β_d of §1 (all rows) and §X.a (h ≠ best_d) are shown for reference; the decomposition is OLS.
+
+| d | w^w_c | Slope, coincidence rows | w^w_n | Slope, h ≠ best_d rows | Within mixture | Between-group term | Pooled β_OLS | Mixed β_d, all rows (§1) | Mixed β_d, h ≠ best_d (§X.a) |
+|---|---|---|---|---|---|---|---|---|---|
+| 2 | 0.1823 | 1.0000 | 0.8177 | -0.1831 | 0.0326 | 0.1667 | 0.1993 | 0.1963 | -0.1840 |
+| 4 | 0.1939 | 1.0000 | 0.8061 | -0.2116 | 0.0233 | 0.1904 | 0.2137 | 0.2091 | -0.2131 |
+| 8 | 0.1994 | 1.0000 | 0.8006 | -0.2614 | -0.0099 | 0.2544 | 0.2445 | 0.2355 | -0.2668 |
